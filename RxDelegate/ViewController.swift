@@ -10,8 +10,10 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class ViewController: UIViewController, UITableViewDataSource {
+class ViewController: UIViewController {
   @IBOutlet weak var tableView: UITableView!
+  var formDataSource = FormDataSource()
+  
   var forms = [
     Form(title: "title", value: "1"),
     Form(title: "name", value: "2"),
@@ -33,34 +35,12 @@ class ViewController: UIViewController, UITableViewDataSource {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    formDataSource.bind(forms).subscribeNext { forms -> Void in
+      print(forms)
+    }.addDisposableTo(bag)
+    tableView.dataSource = formDataSource
     tableView.rowHeight = UITableViewAutomaticDimension
     tableView.estimatedRowHeight = 50
-  }
-  
-  // MARK: delegate
-  
-  func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return forms.count
-  }
-  
-  func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-    let form = forms[indexPath.row]
-    guard let cell = tableView.dequeueReusableCellWithIdentifier(TextFieldFormCell.identifier()) else {
-      return UITableViewCell()
-    }
-    
-    if let textFieldFormCell = cell as? TextFieldFormCell {
-      textFieldFormCell.configure(form)
-      textFieldFormCell.didChange = { [weak self] text, cell -> () in
-        guard let row = self?.tableView.indexPathForCell(cell)?.row,
-        form = self?.forms[row] else {
-          return
-        }
-        self?.forms[row] = Form(title: form.title, value: text)
-      }
-    }
-    
-    return cell
   }
 }
 
